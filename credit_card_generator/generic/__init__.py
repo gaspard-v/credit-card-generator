@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import NamedTuple, Optional, Tuple, Union
-from datetime import date
+from datetime import date, timedelta
 import random
 from ..utils import luhn_compute
 
@@ -17,7 +17,7 @@ class CardType(int, Enum):
 
 
 class Card(NamedTuple):
-    type: CardType
+    type: str
     number: int
     exp_date: date
     cvc: int
@@ -46,8 +46,28 @@ def generate_card(card_type: CardType,
     card_number = str(card_type.value)
     card_number += bank_number
     card_number += account_number
-    card_number += luhn_compute(card_number)
-    # card = Card(
-    #     type=card_type.label,
-    #     number=card_number
-    # )
+    card_number += str(luhn_compute(card_number))
+
+    if not range_exp_date:
+        current_date = date.today()
+        range_exp_date = (
+            date(current_date.year + 2, current_date.month, 1),
+            date(current_date.year + 5, current_date.month, 1),
+        )
+    
+    (start_date, end_date) = range_exp_date
+    res_dates = [start_date]
+    
+    while start_date != end_date:
+        start_date += timedelta(days=1)
+        res_dates.append(start_date)
+    exp_date = random.choice(res_dates)
+
+    card = Card(
+        type=card_type.label,
+        number=int(card_number),
+        exp_date=exp_date,
+        cvc=int(cvc),
+        secret_code=int(secret_code)
+    )
+    return card
