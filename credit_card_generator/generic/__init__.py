@@ -57,7 +57,8 @@ def generate_card(card_type: CardType,
     
     (start_date, end_date) = range_exp_date
     res_dates = [start_date]
-    
+    if start_date > end_date:
+        raise Exception("end date should be superior to start date")
     while start_date != end_date:
         start_date += timedelta(days=1)
         res_dates.append(start_date)
