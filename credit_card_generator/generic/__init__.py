@@ -1,6 +1,7 @@
 from enum import Enum
-from typing import NamedTuple, Optional, Tuple
+from typing import NamedTuple, Optional, Tuple, Union
 from datetime import date
+import random
 from ..utils import luhn_compute
 
 class CardType(int, Enum):
@@ -23,16 +24,30 @@ class Card(NamedTuple):
     secret_code: int
 
 def generate_card(card_type: CardType, 
-                  bank_number: Optional[int] = None, 
-                  account_number: Optional[int] = None,
+                  bank_number: Optional[Union[int, str]] = None, 
+                  account_number: Optional[Union[int, str]] = None,
                   range_exp_date: Optional[Tuple[date, date]] = None,
-                  cvc: Optional[int] = None,
-                  secret_code: Optional[int] = None) -> Card:
-    card_number = card_type.value * pow(10, 14)
-    card_number += bank_number * pow(10, 9)
+                  cvc: Optional[Union[int, str]] = None,
+                  secret_code: Optional[Union[int, str]] = None) -> Card:
+
+    bank_number =      f'{bank_number:0>5}'     if bank_number     else f'{random.randrange(0, 100_000):0>5}'
+    account_number =   f'{account_number:0>15}' if account_number  else f'{random.randrange(0, 1_000_000_000_000_000):0>15}'
+    cvc =              f'{cvc:0>3}'             if cvc             else f'{random.randrange(0, 1_000):0>3}'
+    secret_code =      f'{secret_code:0>4}'     if secret_code     else f'{random.randrange(0, 10_000):0>4}'
+
+    variable_error: Optional[Tuple[str, int]] = None
+    if len(bank_number) != 5: variable_error = ("bank number", 5)
+    if len(account_number) != 15: variable_error = ("account number", 15)
+    if len(cvc) != 3: variable_error = ("cvc", 3)
+    if variable_error:
+        (variable_name, variable_len) = variable_error
+        raise TypeError(f"{variable_name} shoule have a length of {variable_len}")
+
+    card_number = str(card_type.value)
+    card_number += bank_number
     card_number += account_number
-    card_number = (card_number*10) + luhn_compute(card_number)
-    card = Card(
-        type=card_type.label
-        # number=
-    )
+    card_number += luhn_compute(card_number)
+    # card = Card(
+    #     type=card_type.label,
+    #     number=card_number
+    # )
