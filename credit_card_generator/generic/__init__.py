@@ -9,7 +9,7 @@ class CardType(int, Enum):
     MasterCard = (5, 'MASTERCARD')
     Discover = (6, 'DISCOVER')
     Other = (3, 'OTHER')
-    def __new__(cls, value, label):
+    def __new__(cls, value: int, label: str):
         obj = int.__new__(cls, value)
         obj._value_ = value
         obj.label = label
